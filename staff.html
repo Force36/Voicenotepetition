@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Voicenote Submissions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .form-container { max-width: 400px; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Login/Register Section -->
+    <div id="auth-container" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center form-container">
+            <div id="login-view">
+                <h2 class="text-2xl font-bold mb-4">Staff Login</h2>
+                <input type="email" id="login-email" class="w-full p-2 border border-gray-300 rounded-lg mb-4" placeholder="Email">
+                <input type="password" id="login-password" class="w-full p-2 border border-gray-300 rounded-lg mb-4" placeholder="Password">
+                <button id="login-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">Login</button>
+                <p id="login-error" class="text-red-500 mt-2 hidden"></p>
+                <p class="text-sm text-gray-600 mt-4">First time? <a href="#" id="show-register" class="text-indigo-600 hover:underline">Register here</a>.</p>
+            </div>
+            <div id="register-view" class="hidden">
+                <h2 class="text-2xl font-bold mb-4">Register New Staff</h2>
+                <input type="email" id="register-email" class="w-full p-2 border border-gray-300 rounded-lg mb-4" placeholder="Email">
+                <input type="password" id="register-password" class="w-full p-2 border border-gray-300 rounded-lg mb-4" placeholder="Password">
+                <button id="register-btn" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">Register</button>
+                <p id="register-message" class="mt-2 hidden"></p>
+                <p class="text-sm text-gray-600 mt-4"><a href="#" id="show-login" class="text-indigo-600 hover:underline">Back to Login</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Permanent Delete -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center">
+            <h2 class="text-2xl font-bold mb-4">Are you sure?</h2>
+            <p class="mb-6 text-gray-600">This action is permanent and cannot be undone. The audio file and all associated data will be deleted forever.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-delete-btn" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">Yes, Delete Permanently</button>
+                <button id="cancel-delete-btn" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-content" class="container mx-auto p-4 md:p-8 hidden">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Voicenote Submissions</h1>
+                <p class="text-gray-600">Review and approve new voicenotes for the project.</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="view-downloaded-btn" class="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600">View Downloaded</button>
+                <button id="view-bin-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">View Bin</button>
+                <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard View -->
+        <main id="main-dashboard-view" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Needs Review Section -->
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Needs Reviewing</h2>
+                    <div class="flex items-center space-x-2">
+                        <!-- Filter Dropdown -->
+                        <select id="filter-assignee-dropdown" class="p-2 border border-gray-300 rounded-lg">
+                            <option value="all">Show All</option>
+                        </select>
+                        <select id="assignee-dropdown" class="p-2 border border-gray-300 rounded-lg"></select>
+                        <button id="bulk-assign-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Assign Selected</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg">
+                    <ul id="review-list" class="divide-y divide-gray-200"></ul>
+                </div>
+            </div>
+            <!-- Approved Section -->
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Approved</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <input id="select-all-approved" type="checkbox" class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                            <label for="select-all-approved" class="ml-2 text-sm font-medium text-gray-700">Select All</label>
+                        </div>
+                        <button id="bulk-download-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Download Selected</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg">
+                    <ul id="approved-list" class="divide-y divide-gray-200"></ul>
+                </div>
+            </div>
+        </main>
+
+        <!-- Downloaded Items View -->
+        <div id="downloaded-view" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Downloaded Items</h2>
+                <button id="back-to-dashboard-btn-from-downloaded" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Back to Dashboard</button>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg">
+                <ul id="downloaded-list" class="divide-y divide-gray-200"></ul>
+            </div>
+        </div>
+
+        <!-- Binned Items View -->
+        <div id="bin-view" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Binned Items</h2>
+                <button id="back-to-dashboard-btn-from-bin" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Back to Dashboard</button>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg">
+                <ul id="binned-list" class="divide-y divide-gray-200"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Auth Logic ---
+        const authContainer = document.getElementById('auth-container');
+        const dashboardContent = document.getElementById('dashboard-content');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+
+        showRegister.addEventListener('click', (e) => { e.preventDefault(); document.getElementById('login-view').classList.add('hidden'); document.getElementById('register-view').classList.remove('hidden'); });
+        showLogin.addEventListener('click', (e) => { e.preventDefault(); document.getElementById('register-view').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); });
+
+        const fetchOptions = (method = 'GET', body = null) => {
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            };
+            if (body) options.body = JSON.stringify(body);
+            return options;
+        };
+
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorP = document.getElementById('login-error');
+            
+            const response = await fetch('/api/login', fetchOptions('POST', { email, password }));
+            if (response.ok) {
+                authContainer.classList.add('hidden');
+                dashboardContent.classList.remove('hidden');
+                initializeSocket();
+                loadSubmissions();
+                populateUsers();
+            } else {
+                const result = await response.json();
+                errorP.textContent = result.message;
+                errorP.classList.remove('hidden');
+            }
+        });
+
+        registerBtn.addEventListener('click', async () => {
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const messageP = document.getElementById('register-message');
+            const response = await fetch('/api/register', fetchOptions('POST', { email, password }));
+            const result = await response.json();
+            messageP.textContent = result.message;
+            messageP.classList.remove('hidden');
+            messageP.className = response.ok ? 'text-green-500 mt-2' : 'text-red-500 mt-2';
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await fetch('/api/logout', fetchOptions('POST'));
+            window.location.reload();
+        });
+
+        // --- Real-time Socket.IO Logic ---
+        function initializeSocket() {
+            const socket = io({ withCredentials: true });
+            socket.on('connect', () => console.log('Successfully connected to real-time server!'));
+            socket.on('submissions_updated', () => {
+                console.log('Received submissions_updated event. Reloading list...');
+                loadSubmissions();
+            });
+        }
+
+        // --- Dashboard Logic ---
+        const reviewList = document.getElementById('review-list');
+        const approvedList = document.getElementById('approved-list');
+        const binnedList = document.getElementById('binned-list');
+        const downloadedList = document.getElementById('downloaded-list');
+        const mainDashboardView = document.getElementById('main-dashboard-view');
+        const binView = document.getElementById('bin-view');
+        const downloadedView = document.getElementById('downloaded-view');
+        const viewBinBtn = document.getElementById('view-bin-btn');
+        const viewDownloadedBtn = document.getElementById('view-downloaded-btn');
+        const backToDashboardBtnFromBin = document.getElementById('back-to-dashboard-btn-from-bin');
+        const backToDashboardBtnFromDownloaded = document.getElementById('back-to-dashboard-btn-from-downloaded');
+        const assigneeDropdown = document.getElementById('assignee-dropdown');
+        const filterAssigneeDropdown = document.getElementById('filter-assignee-dropdown');
+        const bulkAssignBtn = document.getElementById('bulk-assign-btn');
+        const selectAllApproved = document.getElementById('select-all-approved');
+        const bulkDownloadBtn = document.getElementById('bulk-download-btn');
+        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+        let fileToDelete = null;
+
+        viewBinBtn.addEventListener('click', () => {
+            mainDashboardView.classList.add('hidden');
+            downloadedView.classList.add('hidden');
+            binView.classList.remove('hidden');
+        });
+
+        viewDownloadedBtn.addEventListener('click', () => {
+            mainDashboardView.classList.add('hidden');
+            binView.classList.add('hidden');
+            downloadedView.classList.remove('hidden');
+        });
+
+        const backToDashboard = () => {
+            binView.classList.add('hidden');
+            downloadedView.classList.add('hidden');
+            mainDashboardView.classList.remove('hidden');
+        };
+        backToDashboardBtnFromBin.addEventListener('click', backToDashboard);
+        backToDashboardBtnFromDownloaded.addEventListener('click', backToDashboard);
+
+        async function populateUsers() {
+            try {
+                const response = await fetch('/api/users', fetchOptions());
+                if (!response.ok) return;
+                const users = await response.json();
+                assigneeDropdown.innerHTML = '<option value="">Assign to...</option>';
+                filterAssigneeDropdown.innerHTML = '<option value="all">Show All</option>';
+                users.forEach(user => {
+                    const option1 = document.createElement('option');
+                    option1.value = user.email;
+                    option1.textContent = user.email;
+                    assigneeDropdown.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = user.email;
+                    option2.textContent = user.email;
+                    filterAssigneeDropdown.appendChild(option2);
+                });
+            } catch (error) {
+                console.error("Could not populate users:", error);
+            }
+        }
+
+        async function loadSubmissions() {
+            try {
+                const selectedAssignee = filterAssigneeDropdown.value;
+                const response = await fetch(`/api/submissions?assignee=${selectedAssignee}`, fetchOptions());
+                
+                if (response.status === 401) {
+                    window.location.reload();
+                    return;
+                }
+                const submissions = await response.json();
+                
+                reviewList.innerHTML = '';
+                approvedList.innerHTML = '';
+                binnedList.innerHTML = '';
+                downloadedList.innerHTML = '';
+
+                const needsReviewSubs = submissions.filter(s => s.status === 'Needs Reviewing');
+                const approvedSubs = submissions.filter(s => s.status === 'Approved');
+                const downloadedSubs = submissions.filter(s => s.status === 'Downloaded');
+                const binnedSubs = submissions.filter(s => s.status === 'Binned');
+
+                if (needsReviewSubs.length === 0) reviewList.innerHTML = '<li class="p-6 text-center text-gray-500">No submissions to review.</li>';
+                else needsReviewSubs.forEach(sub => reviewList.appendChild(createSubmissionElement(sub)));
+
+                if (approvedSubs.length === 0) approvedList.innerHTML = '<li class="p-6 text-center text-gray-500">No approved submissions.</li>';
+                else approvedSubs.forEach(sub => approvedList.appendChild(createSubmissionElement(sub)));
+
+                if (downloadedSubs.length === 0) downloadedList.innerHTML = '<li class="p-6 text-center text-gray-500">No downloaded items.</li>';
+                else downloadedSubs.forEach(sub => downloadedList.appendChild(createSubmissionElement(sub)));
+
+                if (binnedSubs.length === 0) binnedList.innerHTML = '<li class="p-6 text-center text-gray-500">No binned items.</li>';
+                else binnedSubs.forEach(sub => binnedList.appendChild(createSubmissionElement(sub)));
+                
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+            }
+        }
+
+        function createSubmissionElement(sub) {
+            const listItem = document.createElement('li');
+            listItem.className = 'p-4';
+            listItem.dataset.filename = sub.filename;
+            const isApproved = sub.status === 'Approved';
+            const isBinned = sub.status === 'Binned';
+            const isDownloaded = sub.status === 'Downloaded';
+            
+            let statusColor = 'bg-gray-100 text-gray-800';
+            if (isApproved) statusColor = 'bg-green-100 text-green-800';
+            if (sub.status === 'Needs Reviewing') statusColor = 'bg-red-100 text-red-800';
+            if (isDownloaded) statusColor = 'bg-blue-100 text-blue-800';
+            if (isBinned) statusColor = 'bg-gray-200 text-gray-600';
+
+            const mainContentHTML = `
+                <div class="flex items-center space-x-3">
+                    ${!isBinned && !isDownloaded ? '<input type="checkbox" class="bulk-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 flex-shrink-0">' : '<div class="w-5 h-5 flex-shrink-0"></div>'}
+                    <div class="flex-grow min-w-0">
+                        <p class="font-semibold text-base text-gray-800 truncate">${sub.filename}</p>
+                        ${sub.assignee_email ? `<p class="text-xs text-gray-500">Assigned to: ${sub.assignee_email}</p>` : ''}
+                        <audio controls class="w-full mt-2"></audio>
+                    </div>
+                </div>
+            `;
+            
+            let actionsHTML = '';
+            if (isBinned) {
+                actionsHTML = `
+                    <div class="flex items-center space-x-2">
+                        <button data-status="Needs Reviewing" class="status-btn bg-green-500 text-white px-3 py-1.5 rounded-md hover:bg-green-600 text-sm">Restore</button>
+                        <button class="delete-btn bg-red-700 text-white px-3 py-1.5 rounded-md hover:bg-red-800 text-sm">Delete Permanently</button>
+                    </div>
+                `;
+            } else if (isDownloaded) {
+                 actionsHTML = `
+                    <div class="flex items-center space-x-2">
+                         <button data-status="Needs Reviewing" class="status-btn bg-green-500 text-white px-3 py-1.5 rounded-md hover:bg-green-600 text-sm">Restore</button>
+                         <button data-status="Binned" class="status-btn bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm">Bin</button>
+                    </div>
+                `;
+            }
+            else {
+                 actionsHTML = `
+                    <div class="flex items-center space-x-2">
+                        <button data-status="Approved" class="status-btn bg-green-500 text-white px-3 py-1.5 rounded-md hover:bg-green-600 text-sm">Approve</button>
+                        <button data-status="Needs Reviewing" class="status-btn bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600 text-sm">Review</button>
+                        ${isApproved ? `<button class="download-btn bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm">Download</button>` : ''}
+                        <button data-status="Binned" class="status-btn bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm">Bin</button>
+                    </div>
+                `;
+            }
+
+            listItem.innerHTML = `
+                <div class="flex flex-col">
+                    ${mainContentHTML}
+                    <div class="flex items-center justify-between mt-3">
+                        <div class="status-badge text-center inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}">
+                            ${sub.status} ${sub.approved_by ? `by ${sub.approved_by.split('@')[0]}` : ''}
+                        </div>
+                        ${actionsHTML}
+                    </div>
+                </div>
+            `;
+            listItem.querySelector('audio').src = `/uploads/${sub.filename}`;
+            return listItem;
+        }
+        
+        function downloadFiles(filenames) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/api/download-approved';
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = 'filenames';
+            hiddenField.value = JSON.stringify(filenames);
+            form.appendChild(hiddenField);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
+        // --- Event Listeners ---
+        document.body.addEventListener('click', async (event) => {
+            const target = event.target;
+            const filename = target.closest('li')?.dataset.filename;
+
+            if (target.classList.contains('status-btn')) {
+                const newStatus = target.dataset.status;
+                await fetch('/api/submission/status', fetchOptions('POST', { filename, status: newStatus }));
+            }
+            if (target.classList.contains('delete-btn')) {
+                fileToDelete = filename;
+                deleteConfirmModal.classList.remove('hidden');
+            }
+            if (target.classList.contains('download-btn')) {
+                downloadFiles([filename]);
+            }
+        });
+
+        filterAssigneeDropdown.addEventListener('change', loadSubmissions);
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+            if (fileToDelete) {
+                await fetch('/api/submission/delete', fetchOptions('POST', { filename: fileToDelete }));
+                fileToDelete = null;
+                deleteConfirmModal.classList.add('hidden');
+            }
+        });
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+            fileToDelete = null;
+            deleteConfirmModal.classList.add('hidden');
+        });
+
+        bulkAssignBtn.addEventListener('click', async () => {
+            const assigneeEmail = assigneeDropdown.value;
+            if (!assigneeEmail) {
+                alert('Please select a staff member to assign to.');
+                return;
+            }
+            const selectedCheckboxes = document.querySelectorAll('#review-list .bulk-checkbox:checked');
+            const filenames = Array.from(selectedCheckboxes).map(cb => cb.closest('li').dataset.filename);
+
+            if (filenames.length === 0) {
+                alert('Please select at least one submission to assign.');
+                return;
+            }
+
+            await fetch('/api/submissions/assign-bulk', fetchOptions('POST', { filenames, assigneeEmail }));
+        });
+        
+        selectAllApproved.addEventListener('click', () => {
+            document.querySelectorAll('#approved-list .bulk-checkbox').forEach(checkbox => {
+                checkbox.checked = selectAllApproved.checked;
+            });
+        });
+
+        bulkDownloadBtn.addEventListener('click', () => { 
+            const filenames = Array.from(document.querySelectorAll('#approved-list .bulk-checkbox:checked'))
+                                  .map(cb => cb.closest('li').dataset.filename);
+            downloadFiles(filenames);
+         });
+        
+        // --- Initial Load ---
+        (async () => {
+            try {
+                const response = await fetch('/api/submissions', fetchOptions());
+                if (response.ok) {
+                    authContainer.classList.add('hidden');
+                    dashboardContent.classList.remove('hidden');
+                    initializeSocket();
+                    loadSubmissions();
+                    populateUsers();
+                }
+            } catch (e) { /* User is not logged in */ }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Petition Recorder</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .terms-box::-webkit-scrollbar { display: none; }
+        .terms-box { -ms-overflow-style: none; scrollbar-width: none; }
+        .spinner { border-top-color: transparent; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
+
+    <div class="w-full">
+        <!-- Page 0: Landing Page -->
+        <div id="landing-page" class="w-full max-w-2xl mx-auto p-4 md:p-8">
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <!-- Logos Section -->
+                <div class="flex justify-center items-center space-x-6 md:space-x-10 mb-8">
+                    <img src="images/JO.png" alt="Jamie Oliver Group Logo" class="h-16 md:h-20">
+                    <img src="images/BDA.png" alt="British Dyslexia Association Logo" class="h-20 md:h-24">
+                </div>
+
+                <!-- UPDATED TEXT -->
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Thanks for being part of the Dyslexia Revolution.</h1>
+                <p class="text-2xl text-indigo-600 font-semibold mb-6">‘Sign’ the Voice Petition</p>
+                <p class="text-lg text-gray-600 mb-8">Let’s make sure the voices of those who live it every day are heard – loud and clear.</p>
+                
+                <button id="sign-petition-btn" class="w-full md:w-auto px-8 py-4 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700">Sign the Voice Petition now</button>
+            </div>
+        </div>
+
+        <!-- Page 1: Terms of Service -->
+        <div id="tos-page" class="w-full max-w-2xl mx-auto p-4 md:p-8 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h1 class="text-3xl font-bold text-center mb-4">Voice Recording Consent</h1>
+                <p class="text-center text-gray-600 mb-6">Before your voice petition is received, please carefully read and understand the following terms. By ticking the box below, you provide your explicit consent for the recording and processing of your voice and personal data as described.</p>
+                <div class="terms-box h-48 overflow-y-scroll border border-gray-200 rounded-lg p-4 bg-gray-50 text-sm text-gray-700 mb-6">
+                    <p class="mb-4"><strong>By ticking the box below, I confirm that:</strong></p>
+                    <ol class="list-decimal list-inside space-y-3">
+                        <li>I freely give my explicit consent for my voice to be recorded.</li>
+                        <li>I understand that the recording may be used for the purposes of petitioning the UK Government to improve the SEND provision at school.</li>
+                        <li>The recording may be stored securely for a period of 8 months.</li>
+                        <li>The recording and my personal data may be shared with third parties for the purposes of the voice petition of the British Dyslexia Association and Jamie Oliver Group.</li>
+                        <li>I am aware of my data protection rights under the UK GDPR, including:
+                            <ul class="list-disc list-inside ml-4 mt-1">
+                                <li>The right to access, correct, or request the deletion of my data.</li>
+                                <li>The right to withdraw my consent at any time.</li>
+                                <li>The right to lodge a complaint with the Information Commissioner's Office (ICO)</li>
+                            </ul>
+                        </li>
+                        <li>I understand that I can withdraw my consent at any time by contacting marketing@bdadyslexia.org.uk.</li>
+                    </ol>
+                    <p class="mt-4">Please note that the British Dyslexia Association will be the Processor and Controller under UK GDPR and Data Protection Act (Data Protection Laws) for this process, ensuring your data is handled securely and compliantly. The British Dyslexia Association warrants that the data will be handled in a way that ensures appropriate security against unlawful processing and is compliant with Data Protection Laws.</p>
+                </div>
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <input type="checkbox" id="tos-agree-checkbox" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <label for="tos-agree-checkbox" class="text-sm md:text-base text-left">I agree to the recording of my voice and the processing of my personal data in accordance with the above.</label>
+                </div>
+                <button id="tos-continue-btn" class="w-full px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none" disabled>Continue</button>
+            </div>
+        </div>
+
+        <!-- Page 2: User Info -->
+        <div id="info-page" class="w-full max-w-2xl mx-auto p-4 md:p-8 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h1 class="text-3xl font-bold text-center mb-6">Tell Us About Yourself</h1>
+                <div class="space-y-6">
+                    <div>
+                        <label for="first-name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input type="text" id="first-name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., Alex">
+                    </div>
+                    <div>
+                        <label for="postcode" class="block text-sm font-medium text-gray-700 mb-1">First Part of Your Postcode</label>
+                        <input type="text" id="postcode" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., SW1A" maxlength="4" oninput="this.value = this.value.replace(/\s/g, '')">
+                    </div>
+                </div>
+                <button id="info-next-btn" class="w-full mt-8 px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700">Next</button>
+            </div>
+        </div>
+
+        <!-- Page 3: Recorder -->
+        <div id="recorder-page" class="w-full max-w-2xl mx-auto p-4 md:p-8 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <h1 class="text-3xl font-bold mb-2">Record Your Message</h1>
+                
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg mb-6 text-left">
+                    <p class="font-bold">Important!</p>
+                    <p>Please start your voice note by saying: <br><strong>‘Hi, I’m [Your First Name] and I’m signing this petition because...’</strong></p>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-gray-600 mb-4">Need an idea? Get a suggestion!</p>
+                    <button id="suggest-topic-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700">
+                        <span id="suggest-btn-text">Get a Question</span>
+                    </button>
+                    <div id="topic-suggestion-box" class="mt-4 bg-indigo-50 p-4 rounded-lg text-indigo-800 text-center hidden transition-all duration-300 min-h-[6rem] flex items-center justify-center">
+                        <p id="topic-suggestion-text" class="font-medium text-lg"></p>
+                    </div>
+                </div>
+
+                <p id="recorder-status" class="text-xl text-gray-600 h-8 mb-4">Ready to Record</p>
+                
+                <div class="relative w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                    <div id="timer-display" class="absolute text-5xl font-bold text-indigo-600"></div>
+                    <svg class="transform -rotate-90 w-full h-full">
+                        <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="88" cx="96" cy="96" />
+                        <circle id="progress-ring" class="text-indigo-600" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="88" cx="96" cy="96" style="stroke-dasharray: 553; stroke-dashoffset: 553;"/>
+                    </svg>
+                </div>
+
+                <audio id="audio-player" controls class="w-full mb-6 hidden"></audio>
+
+                <div id="main-controls" class="flex justify-center space-x-4 mb-4">
+                    <button id="record-btn" class="w-28 px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-red-600 hover:bg-red-700">Record</button>
+                    <button id="pause-btn" class="w-28 px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-yellow-500 hover:bg-yellow-600" disabled>Pause</button>
+                    <button id="stop-btn" class="w-28 px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-gray-500 hover:bg-gray-600" disabled>Stop</button>
+                </div>
+                <div id="submission-controls" class="hidden flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <button id="rerecord-btn" class="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-gray-500 hover:bg-gray-600">Re-record</button>
+                    <button id="send-btn" class="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-green-600 hover:bg-green-700">Send My Voice Note</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Success -->
+        <div id="success-page" class="w-full max-w-2xl mx-auto p-4 md:p-8 hidden">
+             <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <h1 class="text-3xl font-bold text-green-600 mb-4">Thank You!</h1>
+                <p class="text-lg text-gray-700 mb-6">Your voice note has been successfully submitted for review.</p>
+                <button id="record-again-btn" class="px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700">Submit a different one</button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const pages = {
+            landing: document.getElementById('landing-page'),
+            tos: document.getElementById('tos-page'),
+            info: document.getElementById('info-page'),
+            recorder: document.getElementById('recorder-page'),
+            success: document.getElementById('success-page'),
+        };
+
+        const signPetitionBtn = document.getElementById('sign-petition-btn');
+        const tosAgreeCheckbox = document.getElementById('tos-agree-checkbox');
+        const tosContinueBtn = document.getElementById('tos-continue-btn');
+        const infoNextBtn = document.getElementById('info-next-btn');
+        const firstNameInput = document.getElementById('first-name');
+        const postcodeIntput = document.getElementById('postcode');
+        const recorderStatus = document.getElementById('recorder-status');
+        const timerDisplay = document.getElementById('timer-display');
+        const progressRing = document.getElementById('progress-ring');
+        const audioPlayer = document.getElementById('audio-player');
+        const recordBtn = document.getElementById('record-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const mainControls = document.getElementById('main-controls');
+        const submissionControls = document.getElementById('submission-controls');
+        const rerecordBtn = document.getElementById('rerecord-btn');
+        const sendBtn = document.getElementById('send-btn');
+        const recordAgainBtn = document.getElementById('record-again-btn');
+        const suggestTopicBtn = document.getElementById('suggest-topic-btn');
+        const suggestBtnText = document.getElementById('suggest-btn-text');
+        const topicSuggestionBox = document.getElementById('topic-suggestion-box');
+        const topicSuggestionText = document.getElementById('topic-suggestion-text');
+
+        // --- State Variables ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+        let countdownInterval;
+        let recordingTimer;
+        let secondsElapsed = 0;
+        let isPaused = false;
+        const COUNTDOWN_SECONDS = 5;
+        const RECORDING_SECONDS = 60;
+        const ringCircumference = 2 * Math.PI * 88;
+        progressRing.style.strokeDasharray = `${ringCircumference} ${ringCircumference}`;
+        progressRing.style.strokeDashoffset = ringCircumference;
+
+        const prompts = [
+            "How has dyslexia, or special education needs and disabilities, touched you or your family?",
+            "What problems have you and others faced in the current environment / system around dyslexia, or special educational needs?",
+            "Why does this matter to you?",
+            "How has it affected children or young people you know?",
+            "What stories show how big this problem is for you?",
+            "What has happened because not enough has been done?",
+            "Have you seen good results when action was taken?",
+            "What’s the one thing the government should do right now?",
+            "What would a better future look like if this was fixed?",
+            "Why is it so important to act now?",
+            "What would you say to those in charge about what they must do?",
+            "How would fixing the system make people’s lives better?",
+            "What do you hope will happen if lots of people use their voice to sign this petition?"
+        ];
+        let lastPromptIndex = -1;
+
+        // --- Page Navigation Logic ---
+        function showPage(pageId) {
+            Object.values(pages).forEach(page => page.classList.add('hidden'));
+            if (pages[pageId]) {
+                pages[pageId].classList.remove('hidden');
+            }
+        }
+
+        signPetitionBtn.addEventListener('click', () => showPage('tos'));
+        tosAgreeCheckbox.addEventListener('change', () => {
+            tosContinueBtn.disabled = !tosAgreeCheckbox.checked;
+        });
+        tosContinueBtn.addEventListener('click', () => showPage('info'));
+        infoNextBtn.addEventListener('click', () => showPage('recorder'));
+        recordAgainBtn.addEventListener('click', () => resetToStart());
+
+        function getNewPrompt() {
+            topicSuggestionBox.classList.remove('hidden');
+            suggestBtnText.textContent = 'See another question';
+
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * prompts.length);
+            } while (prompts.length > 1 && randomIndex === lastPromptIndex);
+            
+            lastPromptIndex = randomIndex;
+            topicSuggestionText.textContent = prompts[randomIndex];
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                recordBtn.disabled = true;
+                // The suggestTopicBtn is no longer disabled here
+                recorderStatus.textContent = `Recording in...`;
+                let countdown = COUNTDOWN_SECONDS;
+                timerDisplay.textContent = countdown;
+                countdownInterval = setInterval(() => {
+                    countdown--;
+                    timerDisplay.textContent = countdown;
+                    if (countdown === 0) {
+                        clearInterval(countdownInterval);
+                        timerDisplay.textContent = '';
+                        actuallyRecord(stream);
+                    }
+                }, 1000);
+            } catch (err) {
+                recorderStatus.textContent = "Microphone access denied.";
+                recordBtn.disabled = false;
+            }
+        }
+
+        function actuallyRecord(stream) {
+            recorderStatus.textContent = "Recording...";
+            stopBtn.disabled = false;
+            pauseBtn.disabled = false;
+            audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+            });
+            mediaRecorder.addEventListener("stop", () => {
+                audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audioPlayer.src = audioUrl;
+                stream.getTracks().forEach(track => track.stop());
+                recorderStatus.textContent = "Listen, re-record, or send.";
+                mainControls.classList.add('hidden');
+                submissionControls.classList.remove('hidden');
+                audioPlayer.classList.remove('hidden');
+            });
+            progressRing.style.transition = `stroke-dashoffset 1s linear`;
+            startTimer();
+        }
+
+        function startTimer() {
+            recordingTimer = setInterval(() => {
+                if (secondsElapsed >= RECORDING_SECONDS) {
+                    stopRecording();
+                    return;
+                }
+                secondsElapsed++;
+                const offset = ringCircumference - (secondsElapsed / RECORDING_SECONDS) * ringCircumference;
+                progressRing.style.strokeDashoffset = offset;
+            }, 1000);
+        }
+
+        function pauseRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.pause();
+                clearInterval(recordingTimer);
+                isPaused = true;
+                recorderStatus.textContent = "Paused";
+                pauseBtn.textContent = "Resume";
+            }
+        }
+
+        function resumeRecording() {
+            if (mediaRecorder && mediaRecorder.state === "paused") {
+                mediaRecorder.resume();
+                startTimer();
+                isPaused = false;
+                recorderStatus.textContent = "Recording...";
+                pauseBtn.textContent = "Pause";
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && (mediaRecorder.state === "recording" || mediaRecorder.state === "paused")) {
+                mediaRecorder.stop();
+            }
+            clearInterval(recordingTimer);
+            clearInterval(countdownInterval);
+            stopBtn.disabled = true;
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = "Pause";
+            recordBtn.disabled = false;
+            isPaused = false;
+        }
+        
+        function resetRecorder() {
+            audioChunks = [];
+            audioBlob = null;
+            secondsElapsed = 0;
+            recorderStatus.textContent = 'Ready to Record';
+            timerDisplay.textContent = '';
+            audioPlayer.classList.add('hidden');
+            audioPlayer.removeAttribute('src');
+            mainControls.classList.remove('hidden');
+            submissionControls.classList.add('hidden');
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            pauseBtn.disabled = true;
+            suggestTopicBtn.disabled = false;
+            topicSuggestionBox.classList.add('hidden');
+            topicSuggestionText.textContent = '';
+            suggestBtnText.textContent = 'Get a Question';
+            progressRing.style.transition = 'stroke-dashoffset 0.3s ease';
+            progressRing.style.strokeDashoffset = ringCircumference;
+        }
+
+        function sendData() {
+            sendBtn.disabled = true;
+            recorderStatus.textContent = 'Sending... Please wait.';
+            const formData = new FormData();
+            formData.append('firstName', firstNameInput.value);
+            formData.append('postcode', postcodeIntput.value);
+            formData.append('audio', audioBlob, 'voicenote.wav');
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.message) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success from server:', data);
+                localStorage.setItem('uploadSuccess', 'true');
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error uploading:', error);
+                recorderStatus.textContent = `Upload failed: ${error.message}. Please try again.`;
+                sendBtn.disabled = false;
+            });
+        }
+
+        function resetToStart() {
+            resetRecorder();
+            firstNameInput.value = '';
+            postcodeIntput.value = '';
+            tosAgreeCheckbox.checked = false;
+            tosContinueBtn.disabled = true;
+            showPage('landing');
+        }
+
+        // --- Event Listeners ---
+        recordBtn.addEventListener('click', startRecording);
+        pauseBtn.addEventListener('click', () => {
+            if(isPaused) resumeRecording();
+            else pauseRecording();
+        });
+        stopBtn.addEventListener('click', stopRecording);
+        rerecordBtn.addEventListener('click', resetRecorder);
+        sendBtn.addEventListener('click', sendData);
+        suggestTopicBtn.addEventListener('click', getNewPrompt);
+
+        // --- Initial Setup ---
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('uploadSuccess') === 'true') {
+                localStorage.removeItem('uploadSuccess');
+                showPage('success');
+            } else {
+                showPage('landing');
+            }
+        });
+    </script>
+</body>
+</html>
