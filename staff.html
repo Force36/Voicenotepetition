@@ -68,10 +68,6 @@
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-gray-800">Needs Reviewing</h2>
                     <div class="flex items-center space-x-2">
-                        <!-- Filter Dropdown -->
-                        <select id="filter-assignee-dropdown" class="p-2 border border-gray-300 rounded-lg">
-                            <option value="all">Show All</option>
-                        </select>
                         <select id="assignee-dropdown" class="p-2 border border-gray-300 rounded-lg"></select>
                         <button id="bulk-assign-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Assign Selected</button>
                     </div>
@@ -202,7 +198,6 @@
         const backToDashboardBtnFromBin = document.getElementById('back-to-dashboard-btn-from-bin');
         const backToDashboardBtnFromDownloaded = document.getElementById('back-to-dashboard-btn-from-downloaded');
         const assigneeDropdown = document.getElementById('assignee-dropdown');
-        const filterAssigneeDropdown = document.getElementById('filter-assignee-dropdown');
         const bulkAssignBtn = document.getElementById('bulk-assign-btn');
         const selectAllApproved = document.getElementById('select-all-approved');
         const bulkDownloadBtn = document.getElementById('bulk-download-btn');
@@ -235,17 +230,11 @@
                 if (!response.ok) return;
                 const users = await response.json();
                 assigneeDropdown.innerHTML = '<option value="">Assign to...</option>';
-                filterAssigneeDropdown.innerHTML = '<option value="all">Show All</option>';
                 users.forEach(user => {
-                    const option1 = document.createElement('option');
-                    option1.value = user.email;
-                    option1.textContent = user.email;
-                    assigneeDropdown.appendChild(option1);
-
-                    const option2 = document.createElement('option');
-                    option2.value = user.email;
-                    option2.textContent = user.email;
-                    filterAssigneeDropdown.appendChild(option2);
+                    const option = document.createElement('option');
+                    option.value = user.email;
+                    option.textContent = user.email;
+                    assigneeDropdown.appendChild(option);
                 });
             } catch (error) {
                 console.error("Could not populate users:", error);
@@ -254,9 +243,7 @@
 
         async function loadSubmissions() {
             try {
-                const selectedAssignee = filterAssigneeDropdown.value;
-                const response = await fetch(`/api/submissions?assignee=${selectedAssignee}`, fetchOptions());
-                
+                const response = await fetch('/api/submissions', fetchOptions());
                 if (response.status === 401) {
                     window.location.reload();
                     return;
@@ -388,8 +375,6 @@
                 downloadFiles([filename]);
             }
         });
-
-        filterAssigneeDropdown.addEventListener('change', loadSubmissions);
 
         document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
             if (fileToDelete) {
