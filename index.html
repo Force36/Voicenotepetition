@@ -261,7 +261,7 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 recordBtn.disabled = true;
-                suggestTopicBtn.disabled = true;
+                // The suggestTopicBtn is no longer disabled during recording
                 recorderStatus.textContent = `Recording in...`;
                 let countdown = COUNTDOWN_SECONDS;
                 timerDisplay.textContent = countdown;
@@ -277,7 +277,6 @@
             } catch (err) {
                 recorderStatus.textContent = "Microphone access denied.";
                 recordBtn.disabled = false;
-                suggestTopicBtn.disabled = false;
             }
         }
 
@@ -300,7 +299,6 @@
                 mainControls.classList.add('hidden');
                 submissionControls.classList.remove('hidden');
                 audioPlayer.classList.remove('hidden');
-                suggestTopicBtn.disabled = false;
             });
             progressRing.style.transition = `stroke-dashoffset 1s linear`;
             startTimer();
@@ -388,14 +386,11 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    // Try to parse the response as text first
                     return response.text().then(text => {
                         try {
-                            // See if the text is valid JSON
                             const err = JSON.parse(text);
                             throw new Error(err.message);
                         } catch (e) {
-                            // If not, it's likely an HTML error page
                             console.error("Server returned non-JSON response:", text);
                             throw new Error("An unexpected server error occurred.");
                         }
@@ -405,7 +400,7 @@
             })
             .then(data => {
                 console.log('Success from server:', data);
-                showPage('success'); // Go directly to success page
+                showPage('success');
             })
             .catch(error => {
                 console.error('Error uploading:', error);
@@ -439,7 +434,6 @@
 
         // --- Initial Setup ---
         window.addEventListener('load', () => {
-            // Removed the localStorage check, start fresh every time.
             showPage('landing');
         });
     </script>
