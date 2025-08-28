@@ -388,14 +388,24 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => { throw new Error(err.message) });
+                    // Try to parse the response as text first
+                    return response.text().then(text => {
+                        try {
+                            // See if the text is valid JSON
+                            const err = JSON.parse(text);
+                            throw new Error(err.message);
+                        } catch (e) {
+                            // If not, it's likely an HTML error page
+                            console.error("Server returned non-JSON response:", text);
+                            throw new Error("An unexpected server error occurred.");
+                        }
+                    });
                 }
                 return response.json();
             })
             .then(data => {
                 console.log('Success from server:', data);
-                localStorage.setItem('uploadSuccess', 'true');
-                window.location.reload();
+                showPage('success'); // Go directly to success page
             })
             .catch(error => {
                 console.error('Error uploading:', error);
@@ -429,12 +439,8 @@
 
         // --- Initial Setup ---
         window.addEventListener('load', () => {
-            if (localStorage.getItem('uploadSuccess') === 'true') {
-                localStorage.removeItem('uploadSuccess');
-                showPage('success');
-            } else {
-                showPage('landing');
-            }
+            // Removed the localStorage check, start fresh every time.
+            showPage('landing');
         });
     </script>
 </body>
