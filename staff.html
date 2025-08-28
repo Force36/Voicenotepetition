@@ -65,11 +65,14 @@
         <main id="main-dashboard-view" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Needs Review Section -->
             <div>
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-4 md:space-y-0">
                     <h2 class="text-2xl font-bold text-gray-800">Needs Reviewing</h2>
                     <div class="flex items-center space-x-2">
-                        <select id="assignee-dropdown" class="p-2 border border-gray-300 rounded-lg"></select>
-                        <button id="bulk-assign-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Assign Selected</button>
+                        <select id="filter-assignee-dropdown" class="p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="all">Filter by Assignee...</option>
+                        </select>
+                        <select id="assignee-dropdown" class="p-2 border border-gray-300 rounded-lg text-sm"></select>
+                        <button id="bulk-assign-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-sm">Assign Selected</button>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl shadow-lg">
@@ -198,6 +201,7 @@
         const backToDashboardBtnFromBin = document.getElementById('back-to-dashboard-btn-from-bin');
         const backToDashboardBtnFromDownloaded = document.getElementById('back-to-dashboard-btn-from-downloaded');
         const assigneeDropdown = document.getElementById('assignee-dropdown');
+        const filterAssigneeDropdown = document.getElementById('filter-assignee-dropdown');
         const bulkAssignBtn = document.getElementById('bulk-assign-btn');
         const selectAllApproved = document.getElementById('select-all-approved');
         const bulkDownloadBtn = document.getElementById('bulk-download-btn');
@@ -230,11 +234,17 @@
                 if (!response.ok) return;
                 const users = await response.json();
                 assigneeDropdown.innerHTML = '<option value="">Assign to...</option>';
+                filterAssigneeDropdown.innerHTML = '<option value="all">Filter by Assignee...</option><option value="all">Show All</option>';
                 users.forEach(user => {
-                    const option = document.createElement('option');
-                    option.value = user.email;
-                    option.textContent = user.email;
-                    assigneeDropdown.appendChild(option);
+                    const option1 = document.createElement('option');
+                    option1.value = user.email;
+                    option1.textContent = user.email;
+                    assigneeDropdown.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = user.email;
+                    option2.textContent = user.email;
+                    filterAssigneeDropdown.appendChild(option2);
                 });
             } catch (error) {
                 console.error("Could not populate users:", error);
@@ -243,7 +253,9 @@
 
         async function loadSubmissions() {
             try {
-                const response = await fetch('/api/submissions', fetchOptions());
+                const selectedAssignee = filterAssigneeDropdown.value;
+                const response = await fetch(`/api/submissions?assignee=${selectedAssignee}`, fetchOptions());
+                
                 if (response.status === 401) {
                     window.location.reload();
                     return;
@@ -293,7 +305,7 @@
 
             const mainContentHTML = `
                 <div class="flex items-center space-x-3">
-                    ${!isBinned && !isDownloaded ? '<input type="checkbox" class="bulk-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 flex-shrink-0">' : '<div class="w-5 h-5 flex-shrink-0"></div>'}
+                    ${!isBinned ? '<input type="checkbox" class="bulk-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 flex-shrink-0">' : '<div class="w-5 h-5 flex-shrink-0"></div>'}
                     <div class="flex-grow min-w-0">
                         <p class="font-semibold text-base text-gray-800 truncate">${sub.filename}</p>
                         ${sub.assignee_email ? `<p class="text-xs text-gray-500">Assigned to: ${sub.assignee_email}</p>` : ''}
@@ -375,6 +387,8 @@
                 downloadFiles([filename]);
             }
         });
+
+        filterAssigneeDropdown.addEventListener('change', loadSubmissions);
 
         document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
             if (fileToDelete) {
