@@ -31,6 +31,7 @@
                 </div>
 
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Thanks for being part of the Dyslexia Revolution.</h1>
+                <p class="text-2xl text-indigo-600 font-semibold mb-6">‘Sign’ the Voice Petition</p>
                 <p class="text-lg text-gray-600 mb-8">Let’s make sure the voices of those who live it every day are heard – loud and clear.</p>
                 
                 <button id="sign-petition-btn" class="w-full md:w-auto px-8 py-4 rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700">Sign the Voice Petition now</button>
@@ -60,14 +61,14 @@
                     </ol>
                     <p class="mt-4">Please note that the British Dyslexia Association will be the Processor and Controller under UK GDPR and Data Protection Act (Data Protection Laws) for this process, ensuring your data is handled securely and compliantly. The British Dyslexia Association warrants that the data will be handled in a way that ensures appropriate security against unlawful processing and is compliant with Data Protection Laws.</p>
                 </div>
-                <!-- UPDATED: Added second checkbox -->
+                <!-- UPDATED: Added second checkbox and improved alignment -->
                 <div class="space-y-4 mb-6">
-                    <div class="flex items-center justify-center space-x-4">
-                        <input type="checkbox" id="tos-agree-checkbox" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" id="tos-agree-checkbox" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1 flex-shrink-0">
                         <label for="tos-agree-checkbox" class="text-sm md:text-base text-left">I agree to the recording of my voice and the processing of my personal data in accordance with the above.</label>
                     </div>
-                    <div class="flex items-center justify-center space-x-4">
-                        <input type="checkbox" id="age-confirm-checkbox" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" id="age-confirm-checkbox" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1 flex-shrink-0">
                         <label for="age-confirm-checkbox" class="text-sm md:text-base text-left">I confirm I am 16 or over, or I have permission from a parent or guardian to take part.</label>
                     </div>
                 </div>
@@ -225,7 +226,6 @@
             }
         }
         
-        // UPDATED: Function to check both checkboxes
         function checkTosStatus() {
             tosContinueBtn.disabled = !(tosAgreeCheckbox.checked && ageConfirmCheckbox.checked);
         }
