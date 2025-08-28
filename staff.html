@@ -62,35 +62,41 @@
         </header>
 
         <!-- Main Dashboard View -->
-        <main id="main-dashboard-view" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Needs Review Section -->
-            <div>
-                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-4 md:space-y-0">
-                    <h2 class="text-2xl font-bold text-gray-800">Needs Reviewing</h2>
+        <main id="main-dashboard-view">
+            <!-- NEW: Control Bar -->
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Left Side: Filtering and Assigning -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                        <select id="filter-assignee-dropdown" class="p-2 border border-gray-300 rounded-lg text-sm"></select>
-                        <select id="assignee-dropdown" class="p-2 border border-gray-300 rounded-lg text-sm"></select>
-                        <button id="bulk-assign-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-sm">Assign Selected</button>
+                         <select id="filter-assignee-dropdown" class="p-2 border border-gray-300 rounded-lg text-sm w-full sm:w-auto" aria-label="Filter by assignee"></select>
+                         <select id="assignee-dropdown" class="p-2 border border-gray-300 rounded-lg text-sm w-full sm:w-auto" aria-label="Assign to"></select>
+                         <button id="bulk-assign-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-sm w-full sm:w-auto">Assign Selected</button>
                     </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-lg">
-                    <ul id="review-list" class="divide-y divide-gray-200"></ul>
-                </div>
-            </div>
-            <!-- Approved Section -->
-            <div>
-                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-4 md:space-y-0">
-                    <h2 class="text-2xl font-bold text-gray-800">Approved</h2>
-                    <div class="flex items-center space-x-4">
+                     <!-- Right Side: Downloading -->
+                    <div class="flex items-center justify-start md:justify-end space-x-4">
                         <div class="flex items-center">
                             <input id="select-all-approved" type="checkbox" class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
-                            <label for="select-all-approved" class="ml-2 text-sm font-medium text-gray-700">Select All</label>
+                            <label for="select-all-approved" class="ml-2 text-sm font-medium text-gray-700">Select All Approved</label>
                         </div>
                         <button id="bulk-download-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-sm">Download Selected</button>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-lg">
-                    <ul id="approved-list" class="divide-y divide-gray-200"></ul>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Needs Review Section -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Needs Reviewing</h2>
+                    <div class="bg-white rounded-xl shadow-lg">
+                        <ul id="review-list" class="divide-y divide-gray-200"></ul>
+                    </div>
+                </div>
+                <!-- Approved Section -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Approved</h2>
+                    <div class="bg-white rounded-xl shadow-lg">
+                        <ul id="approved-list" class="divide-y divide-gray-200"></ul>
+                    </div>
                 </div>
             </div>
         </main>
