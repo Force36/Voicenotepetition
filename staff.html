@@ -234,13 +234,12 @@
                 if (!response.ok) return;
                 const users = await response.json();
                 assigneeDropdown.innerHTML = '<option value="">Assign to...</option>';
-                filterAssigneeDropdown.innerHTML = '<option value="all">Filter by Assignee...</option><option value="all">Show All</option>';
+                filterAssigneeDropdown.innerHTML = '<option value="all">Show All</option>';
                 users.forEach(user => {
                     const option1 = document.createElement('option');
                     option1.value = user.email;
                     option1.textContent = user.email;
                     assigneeDropdown.appendChild(option1);
-
                     const option2 = document.createElement('option');
                     option2.value = user.email;
                     option2.textContent = user.email;
@@ -304,8 +303,8 @@
             if (isBinned) statusColor = 'bg-gray-200 text-gray-600';
 
             const mainContentHTML = `
-                <div class="flex items-center space-x-3">
-                    ${!isBinned ? '<input type="checkbox" class="bulk-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 flex-shrink-0">' : '<div class="w-5 h-5 flex-shrink-0"></div>'}
+                <div class="flex items-start space-x-3">
+                    ${!isBinned ? '<input type="checkbox" class="bulk-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 flex-shrink-0 mt-1">' : '<div class="w-5 h-5 flex-shrink-0"></div>'}
                     <div class="flex-grow min-w-0">
                         <p class="font-semibold text-base text-gray-800 truncate">${sub.filename}</p>
                         ${sub.assignee_email ? `<p class="text-xs text-gray-500">Assigned to: ${sub.assignee_email}</p>` : ''}
@@ -342,10 +341,10 @@
             }
 
             listItem.innerHTML = `
-                <div class="flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                     ${mainContentHTML}
-                    <div class="flex items-center justify-between mt-3">
-                        <div class="status-badge text-center inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}">
+                    <div class="flex flex-col items-stretch sm:items-end space-y-3 flex-shrink-0 sm:ml-4">
+                        <div class="status-badge text-center inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}">
                             ${sub.status} ${sub.approved_by ? `by ${sub.approved_by.split('@')[0]}` : ''}
                         </div>
                         ${actionsHTML}
